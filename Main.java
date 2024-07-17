@@ -13,7 +13,7 @@ public class Main {
     public static Scanner sc = new Scanner(System.in);
     public static double[][] Ranks; //rows are iterations and cols are pages
     public static int iterations = 0;
-
+    public static double d = 1.1;
 
 
 
@@ -27,7 +27,6 @@ public class Main {
 
         connectedPairs.print(); //print connections with adjacency list
 
-        double d = 1.1;
         while (d < 0.0 || d > 0.99) {
             System.out.println("Enter the damping factor (usually 0.85, max is 0.99): ");
             d = sc.nextDouble();
