@@ -208,7 +208,7 @@ public class Main {
                 for (Page p : allpages[j].isConnectedByPages) {
                     sum = sum + (p.rank / p.connectsToPages.size());
                 }
-                Ranks[i][j] = (1.0 - d) + (d * sum);
+                Ranks[i][j] = (1.0 - d)/pagecount + (d * sum);
                 allpages[j].rank = Ranks[i][j]; //update the rank of the page
             }
         }
