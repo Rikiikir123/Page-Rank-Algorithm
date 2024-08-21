@@ -243,6 +243,8 @@ public class Main {
         SparkConf conf = new SparkConf().setAppName("Spark PageRank").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
+        int numPages = pagecount;
+
         List<Tuple2<Integer, Integer>> edges = generateEdgeList();
 
         //create RDD of the edges
@@ -251,8 +253,8 @@ public class Main {
         //group by key to get the adjacency list
         JavaPairRDD<Integer, Iterable<Integer>> links = linksRDD.distinct().groupByKey().cache();
 
-        //initialize ranks RDD with each page having a starting rank of 1.0 / numPages
-        JavaPairRDD<Integer, Double> ranks = links.mapValues(value -> 1.0 / pagecount);
+        // Initialize ranks RDD with each page having a rank of 1.0 / numPages
+        JavaPairRDD<Integer, Double> ranks = links.mapValues(value -> 1.0 / numPages);
 
         for (int i = 0; i < iterations; i++) {
             JavaPairRDD<Integer, Double> contributions = links.join(ranks)
@@ -268,7 +270,7 @@ public class Main {
                     });
 
             ranks = contributions.reduceByKey((a, b) -> a + b)
-                    .mapValues(sum -> (1 - d) / pagecount + d * sum);
+                    .mapValues(sum -> (1 - d) / numPages + d * sum);
 
             //update ranks array after each iteration
             List<Tuple2<Integer, Double>> output = ranks.collect();
