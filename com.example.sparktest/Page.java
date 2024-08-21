@@ -1,3 +1,4 @@
+package com.example.sparktest;
 import java.util.ArrayList;
 import java.util.List;
 
