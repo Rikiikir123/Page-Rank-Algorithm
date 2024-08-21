@@ -1,3 +1,17 @@
+package com.example.sparktest;
+
+import com.clearspring.analytics.util.Lists;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import scala.Tuple2;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import java.util.concurrent.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,7 +20,7 @@ import java.util.*;
 
 
 public class Main {
-    public static Random rand = new Random();//if you add a seed 123, 10 iterations, damping factor= 0.85, 3 pages and 4 connections the result will be A=0.2609, B=0.3717, C=0.2609
+    public static Random rand = new Random(123);//if you add a seed 123, 10 iterations, damping factor= 0.85, 3 pages and 4 connections the result will be A=0.2609, B=0.3717, C=0.2609
     public static int pagecount = 0;
     public static Page[] allpages; //array of all the pages
     public static Graph connectedPairs = new Graph();
@@ -31,7 +45,7 @@ public class Main {
             System.out.println("Enter the damping factor (usually 0.85, max is 0.99): ");
             d = sc.nextDouble();
         }
-        
+
         long startTime = System.currentTimeMillis();
 
         if (parameter == 1) {
@@ -41,7 +55,7 @@ public class Main {
             parallelPageRank(iterations, d);
         }
         else if (parameter == 3){
-            System.out.println("Distributedpart");
+            distributedPageRank(iterations,d);
         }
 
 
@@ -225,4 +239,68 @@ public class Main {
         }
         pool.shutdown();
     }
+    public static void distributedPageRank(int iterations, double d) {
+        SparkConf conf = new SparkConf().setAppName("Spark PageRank").setMaster("local[*]");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        List<Tuple2<Integer, Integer>> edges = generateEdgeList();
+
+        //create RDD of the edges
+        JavaPairRDD<Integer, Integer> linksRDD = sc.parallelizePairs(edges);
+
+        //group by key to get the adjacency list
+        JavaPairRDD<Integer, Iterable<Integer>> links = linksRDD.distinct().groupByKey().cache();
+
+        //initialize ranks RDD with each page having a starting rank of 1.0 / numPages
+        JavaPairRDD<Integer, Double> ranks = links.mapValues(value -> 1.0 / pagecount);
+
+        for (int i = 0; i < iterations; i++) {
+            JavaPairRDD<Integer, Double> contributions = links.join(ranks)
+                    .flatMapToPair(s -> {
+                        List<Tuple2<Integer, Double>> results = new ArrayList<>();
+                        Iterable<Integer> urls = s._2._1;
+                        Double rank = s._2._2;
+                        int urlCount = Lists.newArrayList(urls).size();
+                        for (Integer n : urls) {
+                            results.add(new Tuple2<>(n, rank / urlCount));
+                        }
+                        return results.iterator();
+                    });
+
+            ranks = contributions.reduceByKey((a, b) -> a + b)
+                    .mapValues(sum -> (1 - d) / pagecount + d * sum);
+
+            //update ranks array after each iteration
+            List<Tuple2<Integer, Double>> output = ranks.collect();
+            for (Tuple2<Integer, Double> tuple : output) {
+                int pageIndex = tuple._1();
+                double rank = tuple._2();
+                Ranks[i][pageIndex] = rank;
+            }
+        }
+
+        //update the allpages array with the final ranks
+        List<Tuple2<Integer, Double>> finalOutput = ranks.collect();
+        for (Tuple2<Integer, Double> tuple : finalOutput) {
+            int pageIndex = tuple._1();
+            double rank = tuple._2();
+            allpages[pageIndex].rank = rank;
+        }
+
+        sc.stop();
+    }
+
+
+    private static List<Tuple2<Integer, Integer>> generateEdgeList() {
+        List<Tuple2<Integer, Integer>> edges = new ArrayList<>();
+        for (int i = 0; i < allpages.length; i++) {
+            for (Page p : allpages[i].connectsToPages) {
+                int fromIndex = i;
+                int toIndex = Arrays.asList(allpages).indexOf(p);
+                edges.add(new Tuple2<>(fromIndex, toIndex));
+            }
+        }
+        return edges;
+    }
+
 }
