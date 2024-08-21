@@ -1,3 +1,4 @@
+package com.example.sparktest;
 import java.util.*;
 
 public class Graph{
@@ -51,5 +52,3 @@ public class Graph{
         return totalEdges;
     }
 }
-
-
