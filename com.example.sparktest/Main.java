@@ -20,7 +20,7 @@ import java.util.*;
 
 
 public class Main {
-    public static Random rand = new Random(123);//if you add a seed 123, 10 iterations, damping factor= 0.85, 3 pages and 4 connections the result will be A=0.2609, B=0.3717, C=0.2609
+    public static Random rand = new Random(123);//if you add a seed 123, 15 iterations, damping factor= 0.85, 5 pages and 16 connections the result will be A=0.1865 B=0.1956 C=0.2511 D=0.1408 E=0.2261
     public static int pagecount = 0;
     public static Page[] allpages; //array of all the pages
     public static Graph connectedPairs = new Graph();
@@ -253,7 +253,7 @@ public class Main {
         //group by key to get the adjacency list
         JavaPairRDD<Integer, Iterable<Integer>> links = linksRDD.distinct().groupByKey().cache();
 
-        // Initialize ranks RDD with each page having a rank of 1.0 / numPages
+        //initialize ranks RDD with each page having a rank of 1.0 / numPages
         JavaPairRDD<Integer, Double> ranks = links.mapValues(value -> 1.0 / numPages);
 
         for (int i = 0; i < iterations; i++) {
