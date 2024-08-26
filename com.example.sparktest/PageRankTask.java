@@ -21,7 +21,7 @@ public class PageRankTask extends RecursiveTask<Void> {
                 for (Page p : Main.allpages[j].isConnectedByPages) {
                     sum = sum + (p.rank / p.connectsToPages.size());
                 }
-                Main.allpages[j].rank = (1.0 - d)/ Main.pagecount + (d * sum);
+                Main.allpages[j].rank = (1.0 - d) + (d * sum);
             }
             //..divide into two parts (tasks) left and right and compute them at the same time
         } else {
