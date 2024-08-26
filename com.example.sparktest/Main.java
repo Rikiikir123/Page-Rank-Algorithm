@@ -20,7 +20,7 @@ import java.util.*;
 
 
 public class Main {
-    public static Random rand = new Random(123);//if you add a seed 123, 15 iterations, damping factor= 0.85, 5 pages and 16 connections the result will be A=0.1865 B=0.1956 C=0.2511 D=0.1408 E=0.2261
+    public static Random rand = new Random(123);//if you add a seed 123, 15 iterations, damping factor= 0.85, 5 pages and 16 connections the result will be A=0.6801 B=0.3346 C=0.6237 D=0.4391 E=0.4344
     public static int pagecount = 0;
     public static Page[] allpages; //array of all the pages
     public static Graph connectedPairs = new Graph();
@@ -220,9 +220,9 @@ public class Main {
                 //below is the calculation of pagerank
                 double sum = 0.0;
                 for (Page p : allpages[j].isConnectedByPages) {
-                    sum = sum + (p.rank / p.connectsToPages.size());
+                        sum = sum + (p.rank / p.connectsToPages.size());
                 }
-                Ranks[i][j] = (1.0 - d)/pagecount + (d * sum);
+                Ranks[i][j] = (1.0 - d) + (d * sum);
                 allpages[j].rank = Ranks[i][j]; //update the rank of the page
             }
         }
@@ -270,7 +270,7 @@ public class Main {
                     });
 
             ranks = contributions.reduceByKey((a, b) -> a + b)
-                    .mapValues(sum -> (1 - d) / numPages + d * sum);
+                    .mapValues(sum -> (1 - d) + d * sum);
 
             //update ranks array after each iteration
             List<Tuple2<Integer, Double>> output = ranks.collect();
