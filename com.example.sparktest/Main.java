@@ -20,7 +20,7 @@ import java.util.*;
 
 
 public class Main {
-    public static Random rand = new Random(123);//if you add a seed 123, 15 iterations, damping factor= 0.85, 5 pages and 16 connections the result will be A=0.6801 B=0.3346 C=0.6237 D=0.4391 E=0.4344
+    public static Random rand = new Random();//if you add a seed 123, 15 iterations, damping factor= 0.85, 5 pages and 16 connections the result will be A=0.6801 B=0.3346 C=0.6237 D=0.4391 E=0.4344
     public static int pagecount = 0;
     public static Page[] allpages; //array of all the pages
     public static Graph connectedPairs = new Graph();
