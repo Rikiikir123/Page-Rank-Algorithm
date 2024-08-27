@@ -49,7 +49,6 @@ public class Main {
         long startTime = System.currentTimeMillis();
 
         if (parameter == 1) {
-            //page rank of the created pages (arbitrary iterations, arbitrary damping factor)
             PageRank(iterations, d);
         } else if (parameter == 2) {
             parallelPageRank(iterations, d);
